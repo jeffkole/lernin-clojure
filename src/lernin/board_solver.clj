@@ -8,8 +8,22 @@
    "oaref"
    "there"])
 
+(defprotocol Dictionary
+  (contains [this word]))
+
+(deftype VectorDictionary [words]
+  Dictionary
+  (contains [this word] (some #(= word %) words)))
+
+(deftype SetDictionary [words]
+  Dictionary
+  (contains [this word] (contains? words word)))
+
+(def all-words ["cat" "head" "dog" "he" "here" "are" "there" "it" "dot" "die"])
+
 (def dictionary
-  (sort ["cat" "head" "dog" "he" "here" "are" "there" "it" "dot" "die"]))
+  ;; (VectorDictionary. (sort all-words)))
+  (SetDictionary. (set all-words)))
 
 (defn ngram
   "Creates a sequence of n-grams from the input, starting with n-grams of
@@ -23,7 +37,7 @@
           (apply str gram))))))
 
 (defn find-words
-  "Given a dictionary, return a sequence of the valid words in the sequence
+  "Given a Dictionary, return a sequence of the valid words in the sequence
   of candidate words"
   [dictionary candidates]
   (loop [candidates candidates
@@ -31,7 +45,7 @@
     (if (empty? candidates)
       words
       (let [candidate (first candidates)]
-        (recur (rest candidates) (if (some #(= candidate %) dictionary) (cons candidate words) words))))))
+        (recur (rest candidates) (if (contains dictionary candidate) (cons candidate words) words))))))
 
 (defn transpose
   "Given a 2D sequence, return the columns transposed as rows"
